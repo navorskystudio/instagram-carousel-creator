@@ -222,6 +222,15 @@
             background: #dbdbdb;
         }
 
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -246,6 +255,63 @@
             color: #262626;
             margin-bottom: 20px;
             text-align: center;
+        }
+
+        .share-box {
+            background: #f0f8ff;
+            border: 1px solid #0095f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .share-box h3 {
+            font-size: 16px;
+            color: #262626;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .share-link-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .share-link-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #dbdbdb;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .btn-copy {
+            padding: 10px 20px;
+            background: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: #0084e0;
+        }
+
+        .btn-copy.copied {
+            background: #28a745;
+        }
+
+        .share-hint {
+            font-size: 12px;
+            color: #8e8e8e;
+            margin-top: 8px;
         }
 
         .instagram-container {
@@ -441,23 +507,19 @@
             text-transform: uppercase;
         }
 
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
+        .view-only .post-actions,
+        .view-only .likes,
+        .view-only .caption,
+        .view-only .timestamp {
+            display: none;
         }
 
-        .alert-info {
-            background: #e1f5fe;
-            color: #0277bd;
-            border: 1px solid #b3e5fc;
+        .view-only-mode {
+            display: none;
         }
 
-        .alert-error {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ffcdd2;
+        .view-only-mode.active {
+            display: block;
         }
 
         @media (max-width: 768px) {
@@ -467,6 +529,10 @@
 
             .thumbnails {
                 grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+
+            .share-link-container {
+                flex-direction: column;
             }
         }
     </style>
@@ -478,7 +544,7 @@
             <p>Crie e visualize carrosséis do Instagram com até 20 imagens</p>
         </div>
 
-        <div class="upload-section">
+        <div class="upload-section" id="editorMode">
             <h2 style="margin-bottom: 20px; color: #262626;">1. Upload das Imagens</h2>
             
             <div class="upload-area" id="uploadArea">
@@ -519,6 +585,20 @@
         <div class="preview-section" id="previewSection">
             <div class="preview-title">Preview do Instagram</div>
             
+            <div class="share-box">
+                <h3>🔗 Compartilhar Carrossel</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                    Copie este link para compartilhar apenas o carrossel (sem edição):
+                </p>
+                <div class="share-link-container">
+                    <input type="text" class="share-link-input" id="shareLink" readonly>
+                    <button class="btn-copy" id="copyBtn">📋 Copiar</button>
+                </div>
+                <div class="share-hint">
+                    💡 Qualquer pessoa com este link poderá ver o carrossel, mas não poderá editá-lo
+                </div>
+            </div>
+            
             <div class="instagram-container">
                 <div class="post-header">
                     <div class="profile-pic" id="previewInitials">MP</div>
@@ -556,268 +636,36 @@
 
             <div class="button-group" style="margin-top: 30px;">
                 <button class="btn btn-secondary" id="backBtn">← Voltar para Edição</button>
+                <button class="btn btn-success" id="newCarouselBtn">➕ Criar Novo Carrossel</button>
+            </div>
+        </div>
+
+        <div class="view-only-mode" id="viewOnlyMode">
+            <div class="preview-title">Carrossel Compartilhado</div>
+            
+            <div class="instagram-container view-only">
+                <div class="post-header">
+                    <div class="profile-pic" id="viewOnlyInitials">MP</div>
+                    <span class="username" id="viewOnlyUsername">mpro_rondonia</span>
+                </div>
+
+                <div class="carousel-container">
+                    <div class="carousel-indicators" id="viewOnlyIndicators"></div>
+                    <div class="counter" id="viewOnlyCounter">1/1</div>
+                    
+                    <button class="carousel-btn prev" id="viewOnlyPrevBtn">‹</button>
+                    <button class="carousel-btn next" id="viewOnlyNextBtn">›</button>
+
+                    <div class="carousel-track" id="viewOnlyCarouselTrack"></div>
+                </div>
+            </div>
+
+            <div class="button-group" style="margin-top: 30px; max-width: 470px; margin-left: auto; margin-right: auto;">
+                <button class="btn btn-primary" id="createOwnBtn">➕ Criar Meu Próprio Carrossel</button>
             </div>
         </div>
     </div>
 
-    <script>
-        let uploadedImages = [];
-        let currentSlide = 0;
-
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const thumbnailsContainer = document.getElementById('thumbnailsContainer');
-        const previewBtn = document.getElementById('previewBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const previewSection = document.getElementById('previewSection');
-        const backBtn = document.getElementById('backBtn');
-
-        // Upload handlers
-        uploadArea.addEventListener('click', () => fileInput.click());
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-        });
-
-        function handleFiles(files) {
-            const maxFiles = 20;
-            const remainingSlots = maxFiles - uploadedImages.length;
-            
-            if (files.length > remainingSlots) {
-                alert(`Você pode adicionar no máximo ${remainingSlots} imagens. Máximo total: ${maxFiles}`);
-                return;
-            }
-
-            Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        uploadedImages.push(e.target.result);
-                        renderThumbnails();
-                        updatePreviewButton();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-
-        function renderThumbnails() {
-            thumbnailsContainer.innerHTML = '';
-            
-            uploadedImages.forEach((img, index) => {
-                const thumbnail = document.createElement('div');
-                thumbnail.className = 'thumbnail';
-                thumbnail.draggable = true;
-                thumbnail.dataset.index = index;
-                
-                thumbnail.innerHTML = `
-                    <img src="${img}" alt="Imagem ${index + 1}">
-                    <div class="thumbnail-number">${index + 1}</div>
-                    <button class="thumbnail-remove" onclick="removeImage(${index})">×</button>
-                `;
-
-                // Drag and drop para reordenar
-                thumbnail.addEventListener('dragstart', handleDragStart);
-                thumbnail.addEventListener('dragover', handleDragOver);
-                thumbnail.addEventListener('drop', handleDrop);
-                thumbnail.addEventListener('dragend', handleDragEnd);
-                
-                thumbnailsContainer.appendChild(thumbnail);
-            });
-        }
-
-        let draggedIndex = null;
-
-        function handleDragStart(e) {
-            draggedIndex = parseInt(e.target.closest('.thumbnail').dataset.index);
-            e.target.closest('.thumbnail').style.opacity = '0.5';
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            const dropIndex = parseInt(e.target.closest('.thumbnail').dataset.index);
-            
-            if (draggedIndex !== null && draggedIndex !== dropIndex) {
-                const draggedImage = uploadedImages[draggedIndex];
-                uploadedImages.splice(draggedIndex, 1);
-                uploadedImages.splice(dropIndex, 0, draggedImage);
-                renderThumbnails();
-            }
-        }
-
-        function handleDragEnd(e) {
-            e.target.closest('.thumbnail').style.opacity = '1';
-            draggedIndex = null;
-        }
-
-        function removeImage(index) {
-            uploadedImages.splice(index, 1);
-            renderThumbnails();
-            updatePreviewButton();
-        }
-
-        function updatePreviewButton() {
-            previewBtn.disabled = uploadedImages.length === 0;
-        }
-
-        clearBtn.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja remover todas as imagens?')) {
-                uploadedImages = [];
-                renderThumbnails();
-                updatePreviewButton();
-                fileInput.value = '';
-            }
-        });
-
-        previewBtn.addEventListener('click', () => {
-            generatePreview();
-            document.querySelector('.upload-section').style.display = 'none';
-            previewSection.classList.add('active');
-            window.scrollTo(0, 0);
-        });
-
-        backBtn.addEventListener('click', () => {
-            previewSection.classList.remove('active');
-            document.querySelector('.upload-section').style.display = 'block';
-            window.scrollTo(0, 0);
-        });
-
-        function generatePreview() {
-            const username = document.getElementById('usernameInput').value || 'usuario';
-            const likes = document.getElementById('likesInput').value || '0';
-            const caption = document.getElementById('captionInput').value || '';
-
-            // Update profile info
-            const initials = username.substring(0, 2).toUpperCase();
-            document.getElementById('previewInitials').textContent = initials;
-            document.getElementById('previewUsername').textContent = username;
-            document.getElementById('previewCaptionUsername').textContent = username;
-            document.getElementById('previewLikes').textContent = `${likes} curtidas`;
-            document.getElementById('previewCaption').textContent = caption;
-
-            // Build carousel
-            const track = document.getElementById('carouselTrack');
-            const indicatorsContainer = document.getElementById('indicators');
-            
-            track.innerHTML = '';
-            indicatorsContainer.innerHTML = '';
-            
-            uploadedImages.forEach((img, index) => {
-                const slide = document.createElement('div');
-                slide.className = 'carousel-slide';
-                slide.innerHTML = `<img src="${img}" alt="Slide ${index + 1}">`;
-                track.appendChild(slide);
-
-                const indicator = document.createElement('div');
-                indicator.className = 'indicator';
-                if (index === 0) indicator.classList.add('active');
-                indicator.addEventListener('click', () => goToSlide(index));
-                indicatorsContainer.appendChild(indicator);
-            });
-
-            currentSlide = 0;
-            updateCarousel();
-        }
-
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-
-        function updateCarousel() {
-            const track = document.getElementById('carouselTrack');
-            const counter = document.getElementById('counter');
-            const indicators = document.querySelectorAll('.indicator');
-            const totalSlides = uploadedImages.length;
-
-            const offset = currentSlide * -100;
-            track.style.transform = `translateX(${offset}%)`;
-            counter.textContent = `${currentSlide + 1}/${totalSlides}`;
-            
-            indicators.forEach((indicator, index) => {
-                indicator.classList.toggle('active', index === currentSlide);
-            });
-
-            prevBtn.disabled = currentSlide === 0;
-            nextBtn.disabled = currentSlide === totalSlides - 1;
-        }
-
-        function goToSlide(index) {
-            if (index >= 0 && index < uploadedImages.length) {
-                currentSlide = index;
-                updateCarousel();
-            }
-        }
-
-        prevBtn.addEventListener('click', () => {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateCarousel();
-            }
-        });
-
-        nextBtn.addEventListener('click', () => {
-            if (currentSlide < uploadedImages.length - 1) {
-                currentSlide++;
-                updateCarousel();
-            }
-        });
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (previewSection.classList.contains('active')) {
-                if (e.key === 'ArrowLeft' && currentSlide > 0) {
-                    currentSlide--;
-                    updateCarousel();
-                } else if (e.key === 'ArrowRight' && currentSlide < uploadedImages.length - 1) {
-                    currentSlide++;
-                    updateCarousel();
-                }
-            }
-        });
-
-        // Touch support
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        document.querySelector('.carousel-container')?.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        document.querySelector('.carousel-container')?.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, { passive: true });
-
-        function handleSwipe() {
-            const diff = touchStartX - touchEndX;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0 && currentSlide < uploadedImages.length - 1) {
-                    currentSlide++;
-                    updateCarousel();
-                } else if (diff < 0 && currentSlide > 0) {
-                    currentSlide--;
-                    updateCarousel();
-                }
-            }
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
