@@ -6,7 +6,6 @@ Uma ferramenta web gratuita e simples para criar e visualizar carrosséis do Ins
 
 **[Acesse aqui: Instagram Carousel Creator](https://navorskystudio.github.io/instagram-carousel-creator/)**
 
-*(Substitua pelo seu link após fazer o deploy)*
 
 ## ✨ Funcionalidades
 
