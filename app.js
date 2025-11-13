@@ -17,40 +17,25 @@ const newCarouselBtn = document.getElementById('newCarouselBtn');
 const createOwnBtn = document.getElementById('createOwnBtn');
 const loadingMessage = document.getElementById('loadingMessage');
 
-// Check if page loaded with shared carousel data
+// LZString compression
+var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},i={compressToBase64:function(o){if(null==o)return"";var r=i._compress(o,6,function(o){return n.charAt(o)});switch(r.length%4){default:case 0:return r;case 1:return r+"===";case 2:return r+"==";case 3:return r+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(e){return o(n,r.charAt(e))})},compressToEncodedURIComponent:function(o){return null==o?"":i._compress(o,6,function(o){return e.charAt(o)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(n){return o(e,r.charAt(n))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(o,r,n){if(null==o)return"";var e,t,i,s={},p={},u="",c="",a="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<o.length;i+=1)if(u=o.charAt(i),Object.prototype.hasOwnProperty.call(s,u)||(s[u]=f++,p[u]=!0),c=a+u,Object.prototype.hasOwnProperty.call(s,c))a=c;else{if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++),s[c]=f++,a=String(u)}if(""!==a){if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==r-1){d.push(n(m));break}v++}return d.join("")},decompress:function(o){return null==o?"":""==o?null:i._decompress(o.length,32768,function(r){return o.charCodeAt(r)})},_decompress:function(o,n,e){var t,i,s,p,u,c,a,l,f=[],h=4,d=4,m=3,v="",w=[],A={val:e(0),position:n,index:1};for(i=0;3>i;i+=1)f[i]=i;for(p=0,c=Math.pow(2,2),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(t=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 2:return""}for(f[3]=l,s=l,w.push(l);;){if(A.index>o)return"";for(p=0,c=Math.pow(2,m),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(l=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 2:return w.join("")}if(0==h&&(h=Math.pow(2,m),m++),f[l])v=f[l];else{if(l!==d)return null;v=s+s.charAt(0)}w.push(v),f[d++]=s+v.charAt(0),h--,s=v,0==h&&(h=Math.pow(2,m),m++)}}};return i}();
+
+// Check if page loaded with shared carousel
 window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const carouselId = urlParams.get('id');
+    const hash = window.location.hash.substring(1);
     
-    if (carouselId) {
-        loadSharedCarouselFromCloud(carouselId);
+    if (hash) {
+        try {
+            const decompressed = LZString.decompressFromEncodedURIComponent(hash);
+            const data = JSON.parse(decompressed);
+            loadSharedCarousel(data);
+        } catch (e) {
+            console.error('Erro ao carregar:', e);
+            alert('Link inválido ou corrompido.');
+            window.location.href = window.location.pathname;
+        }
     }
 });
-
-async function loadSharedCarouselFromCloud(carouselId) {
-    try {
-        showLoading('Carregando carrossel...');
-        
-        // Use GitHub Gist API (no CORS issues)
-        const response = await fetch(`https://api.github.com/gists/${carouselId}`);
-        
-        if (!response.ok) {
-            throw new Error('Carrossel não encontrado');
-        }
-        
-        const gist = await response.json();
-        const fileContent = gist.files['carousel.json'].content;
-        const data = JSON.parse(fileContent);
-        
-        loadSharedCarousel(data);
-        hideLoading();
-    } catch (error) {
-        console.error('Erro ao carregar carrossel:', error);
-        hideLoading();
-        alert('Erro ao carregar o carrossel. O link pode estar incorreto ou expirado.');
-        window.location.href = window.location.pathname;
-    }
-}
 
 function showLoading(message) {
     if (loadingMessage) {
@@ -259,8 +244,8 @@ clearBtn.addEventListener('click', () => {
     }
 });
 
-previewBtn.addEventListener('click', async () => {
-    await generatePreview();
+previewBtn.addEventListener('click', () => {
+    generatePreview();
 });
 
 backBtn.addEventListener('click', () => {
@@ -281,7 +266,7 @@ newCarouselBtn.addEventListener('click', () => {
     }
 });
 
-async function generatePreview() {
+function generatePreview() {
     const username = document.getElementById('usernameInput').value || 'usuario';
     const likes = document.getElementById('likesInput').value || '0';
     const caption = document.getElementById('captionInput').value || '';
@@ -293,52 +278,17 @@ async function generatePreview() {
     document.getElementById('previewLikes').textContent = `${likes} curtidas`;
     document.getElementById('previewCaption').textContent = caption;
 
-    // Save to GitHub Gist (works perfectly, no CORS issues!)
-    showLoading('Gerando link de compartilhamento...');
+    // Generate compressed share URL (no backend needed!)
+    const shareData = {
+        images: uploadedImages,
+        username: username
+    };
     
-    try {
-        const shareData = {
-            images: uploadedImages,
-            username: username
-        };
-        
-        const gistData = {
-            description: `Instagram Carousel - ${username}`,
-            public: false,
-            files: {
-                'carousel.json': {
-                    content: JSON.stringify(shareData)
-                }
-            }
-        };
-        
-        const response = await fetch('https://api.github.com/gists', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github+json'
-            },
-            body: JSON.stringify(gistData)
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('GitHub API Error:', errorData);
-            throw new Error('Erro ao salvar carrossel');
-        }
-        
-        const data = await response.json();
-        const gistId = data.id;
-        const shareUrl = `${window.location.origin}${window.location.pathname}?id=${gistId}`;
-        
-        shareLink.value = shareUrl;
-        hideLoading();
-    } catch (error) {
-        console.error('Erro ao gerar link:', error);
-        hideLoading();
-        alert('Erro ao gerar link de compartilhamento. Verifique sua conexão com a internet e tente novamente.');
-        return;
-    }
+    const jsonString = JSON.stringify(shareData);
+    const compressed = LZString.compressToEncodedURIComponent(jsonString);
+    const shareUrl = `${window.location.origin}${window.location.pathname}#${compressed}`;
+    
+    shareLink.value = shareUrl;
 
     // Build carousel
     const track = document.getElementById('carouselTrack');
