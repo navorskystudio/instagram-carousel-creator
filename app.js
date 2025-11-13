@@ -15,13 +15,27 @@ const copyBtn = document.getElementById('copyBtn');
 const shareLink = document.getElementById('shareLink');
 const newCarouselBtn = document.getElementById('newCarouselBtn');
 const createOwnBtn = document.getElementById('createOwnBtn');
+const shortenBtn = document.getElementById('shortenBtn');
 
 // Check if page loaded with shared carousel data
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const sharedData = urlParams.get('data');
+    const shortId = urlParams.get('id');
     
-    if (sharedData) {
+    if (shortId) {
+        // Load from short ID (stored in localStorage)
+        const storedData = localStorage.getItem(`carousel_${shortId}`);
+        if (storedData) {
+            try {
+                const decodedData = JSON.parse(storedData);
+                loadSharedCarousel(decodedData);
+            } catch (e) {
+                console.error('Erro ao carregar carrossel', e);
+            }
+        }
+    } else if (sharedData) {
+        // Fallback to long URL format
         try {
             const decodedData = JSON.parse(decodeURIComponent(atob(sharedData)));
             loadSharedCarousel(decodedData);
@@ -250,6 +264,11 @@ newCarouselBtn.addEventListener('click', () => {
     }
 });
 
+function generateShortId() {
+    // Generate a short random ID (8 characters)
+    return Math.random().toString(36).substring(2, 10);
+}
+
 function generatePreview() {
     const username = document.getElementById('usernameInput').value || 'usuario';
     const likes = document.getElementById('likesInput').value || '0';
@@ -262,13 +281,17 @@ function generatePreview() {
     document.getElementById('previewLikes').textContent = `${likes} curtidas`;
     document.getElementById('previewCaption').textContent = caption;
 
+    // Generate short link
     const shareData = {
         images: uploadedImages,
         username: username
     };
-    const encodedData = btoa(encodeURIComponent(JSON.stringify(shareData)));
-    const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
-    shareLink.value = shareUrl;
+    
+    const shortId = generateShortId();
+    localStorage.setItem(`carousel_${shortId}`, JSON.stringify(shareData));
+    
+    const shortUrl = `${window.location.origin}${window.location.pathname}?id=${shortId}`;
+    shareLink.value = shortUrl;
 
     const track = document.getElementById('carouselTrack');
     const indicatorsContainer = document.getElementById('indicators');
@@ -295,8 +318,25 @@ function generatePreview() {
 
 copyBtn.addEventListener('click', () => {
     shareLink.select();
-    document.execCommand('copy');
+    shareLink.setSelectionRange(0, 99999); // For mobile
     
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareLink.value).then(() => {
+            showCopySuccess();
+        }).catch(() => {
+            // Fallback to execCommand
+            document.execCommand('copy');
+            showCopySuccess();
+        });
+    } else {
+        // Fallback for older browsers
+        document.execCommand('copy');
+        showCopySuccess();
+    }
+});
+
+function showCopySuccess() {
     copyBtn.textContent = '✅ Copiado!';
     copyBtn.classList.add('copied');
     
@@ -304,7 +344,7 @@ copyBtn.addEventListener('click', () => {
         copyBtn.textContent = '📋 Copiar';
         copyBtn.classList.remove('copied');
     }, 2000);
-});
+}
 
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
