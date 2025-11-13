@@ -17,10 +17,6 @@ const newCarouselBtn = document.getElementById('newCarouselBtn');
 const createOwnBtn = document.getElementById('createOwnBtn');
 const loadingMessage = document.getElementById('loadingMessage');
 
-// JSONbin.io configuration (free service)
-const JSONBIN_API_KEY = '$2a$10$laICe7057j0tA0VFr7xleeavS3mBUs394NjriQI0AX6ALqzT3ZABG';
-const JSONBIN_BASE_URL = 'https://api.jsonbin.io/v3';
-
 // Check if page loaded with shared carousel data
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -35,18 +31,18 @@ async function loadSharedCarouselFromCloud(carouselId) {
     try {
         showLoading('Carregando carrossel...');
         
-        const response = await fetch(`${JSONBIN_BASE_URL}/b/${carouselId}/latest`, {
-            headers: {
-                'X-Master-Key': JSONBIN_API_KEY
-            }
-        });
+        // Use GitHub Gist API (no CORS issues)
+        const response = await fetch(`https://api.github.com/gists/${carouselId}`);
         
         if (!response.ok) {
             throw new Error('Carrossel não encontrado');
         }
         
-        const data = await response.json();
-        loadSharedCarousel(data.record);
+        const gist = await response.json();
+        const fileContent = gist.files['carousel.json'].content;
+        const data = JSON.parse(fileContent);
+        
+        loadSharedCarousel(data);
         hideLoading();
     } catch (error) {
         console.error('Erro ao carregar carrossel:', error);
@@ -297,7 +293,7 @@ async function generatePreview() {
     document.getElementById('previewLikes').textContent = `${likes} curtidas`;
     document.getElementById('previewCaption').textContent = caption;
 
-    // Save to cloud and get short link
+    // Save to GitHub Gist (works perfectly, no CORS issues!)
     showLoading('Gerando link de compartilhamento...');
     
     try {
@@ -306,30 +302,41 @@ async function generatePreview() {
             username: username
         };
         
-        const response = await fetch(`${JSONBIN_BASE_URL}/b`, {
+        const gistData = {
+            description: `Instagram Carousel - ${username}`,
+            public: false,
+            files: {
+                'carousel.json': {
+                    content: JSON.stringify(shareData)
+                }
+            }
+        };
+        
+        const response = await fetch('https://api.github.com/gists', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY,
-                'X-Bin-Private': 'false'
+                'Accept': 'application/vnd.github+json'
             },
-            body: JSON.stringify(shareData)
+            body: JSON.stringify(gistData)
         });
         
         if (!response.ok) {
+            const errorData = await response.json();
+            console.error('GitHub API Error:', errorData);
             throw new Error('Erro ao salvar carrossel');
         }
         
         const data = await response.json();
-        const carouselId = data.metadata.id;
-        const shareUrl = `${window.location.origin}${window.location.pathname}?id=${carouselId}`;
+        const gistId = data.id;
+        const shareUrl = `${window.location.origin}${window.location.pathname}?id=${gistId}`;
         
         shareLink.value = shareUrl;
         hideLoading();
     } catch (error) {
         console.error('Erro ao gerar link:', error);
         hideLoading();
-        alert('Erro ao gerar link de compartilhamento. Tente novamente.');
+        alert('Erro ao gerar link de compartilhamento. Verifique sua conexão com a internet e tente novamente.');
         return;
     }
 
